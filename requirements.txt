@@ -1,0 +1,11 @@
+xarray
+netcdf4
+h5netcdf
+pyarrow
+pandas
+numpy
+scikit-learn
+xgboost
+matplotlib
+seaborn
+joblib

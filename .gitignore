@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.tmp/
+
+# IDE / OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets*.json
+credentials*.json
+
+# Large / private project data
+data/raw/**
+data/external/**
+!data/raw/.gitkeep
+
+# Generated processed data
+data/processed/**
+!data/processed/.gitkeep
+
+# Trained models and experiment artifacts
+models/**
+!models/.gitkeep
+*.joblib
+*.pkl
+*.pickle
+*.parquet
+*.feather
+
+# Generated outputs
+outputs/**
+!outputs/plots/.gitkeep
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.pdf
+
+# Logs
+*.log
