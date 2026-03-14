@@ -6,7 +6,7 @@ import joblib
 import pandas as pd
 
 from .config import FEATURE_TABLE_NAME, MODELS_DIR, PROCESSED_DIR
-from .data import load_meteorological_daily_features
+from .data import load_processed_meteorological_daily_features
 from .forecast_model import load_forecast_artifacts
 from .predict_future import blend_future_prediction, build_future_month_rows, next_month
 from .predict_future_forecast import load_monthly_bias_map, select_horizon
@@ -103,7 +103,18 @@ def main() -> None:
     target_month = start_date.to_period("M").to_timestamp()
 
     baseline_pm25, grid_lat, grid_lon = get_monthly_baseline(target_month, args.lat, args.lon)
-    daily_met = load_meteorological_daily_features()
+    try:
+        daily_met = load_processed_meteorological_daily_features()
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"{exc}\n"
+            "Short-term 24-72 hour prediction now expects the processed runtime weather file, "
+            "not the raw NetCDF files.\n"
+            "If you only want monthly prediction, use:\n"
+            "  python -m src.predict --year 2023 --month 2 --lat 18.6263 --lon 73.8055\n"
+            "or:\n"
+            "  python -m src.predict_future_forecast --year 2025 --month 2 --lat 18.6263 --lon 73.8055"
+        ) from exc
     daily_met["date"] = pd.to_datetime(daily_met["date"])
     daily_slice = daily_met[(daily_met["date"] >= start_date) & (daily_met["date"] <= end_date)].copy()
     if daily_slice.empty:

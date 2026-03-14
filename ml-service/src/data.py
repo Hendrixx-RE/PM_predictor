@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .config import LAT_MAX, LAT_MIN, LON_MAX, LON_MIN, METEOROLOGICAL_DIR, PM_RAW_DIR, SATELLITE_RAW_DIR
+from .config import DAILY_MET_TABLE_NAME, LAT_MAX, LAT_MIN, LON_MAX, LON_MIN, METEOROLOGICAL_DIR, PM_RAW_DIR, PROCESSED_DIR, SATELLITE_RAW_DIR
 
 
 def find_netcdf_files(raw_dir: Path = PM_RAW_DIR) -> list[Path]:
@@ -197,7 +197,11 @@ def load_meteorological_monthly_features(raw_dir: Path = METEOROLOGICAL_DIR) -> 
     instant_path = raw_dir / "data_stream-oper_stepType-instant.nc"
     accum_path = raw_dir / "data_stream-oper_stepType-accum.nc"
     if not instant_path.exists() or not accum_path.exists():
-        raise FileNotFoundError("Meteorological NetCDF files not found.")
+        raise FileNotFoundError(
+            "Meteorological NetCDF files not found. "
+            f"Expected files at '{instant_path}' and '{accum_path}'. "
+            "Copy the raw meteorological files into ml-service/data/raw/meterological/."
+        )
 
     with xr.open_dataset(instant_path) as instant_ds, xr.open_dataset(accum_path) as accum_ds:
         lat_name = _detect_coordinate_name(instant_ds, ["lat", "latitude", "Latitude", "LAT"])
@@ -253,7 +257,12 @@ def load_meteorological_daily_features(raw_dir: Path = METEOROLOGICAL_DIR) -> pd
     instant_path = raw_dir / "data_stream-oper_stepType-instant.nc"
     accum_path = raw_dir / "data_stream-oper_stepType-accum.nc"
     if not instant_path.exists() or not accum_path.exists():
-        raise FileNotFoundError("Meteorological NetCDF files not found.")
+        raise FileNotFoundError(
+            "Daily meteorological NetCDF files not found. "
+            f"Expected files at '{instant_path}' and '{accum_path}'. "
+            "Copy the raw meteorological files into ml-service/data/raw/meterological/ "
+            "or use monthly prediction commands instead of src.predict_short_term."
+        )
 
     with xr.open_dataset(instant_path) as instant_ds, xr.open_dataset(accum_path) as accum_ds:
         lat_name = _detect_coordinate_name(instant_ds, ["lat", "latitude", "Latitude", "LAT"])
@@ -300,6 +309,23 @@ def load_meteorological_daily_features(raw_dir: Path = METEOROLOGICAL_DIR) -> pd
         .reset_index(drop=True)
     )
     return daily_instant.merge(daily_accum, on="date", how="outer").sort_values("date").reset_index(drop=True)
+
+
+def daily_meteorology_processed_path() -> Path:
+    return PROCESSED_DIR / DAILY_MET_TABLE_NAME
+
+
+def load_processed_meteorological_daily_features(path: Path | None = None) -> pd.DataFrame:
+    file_path = path or daily_meteorology_processed_path()
+    if not file_path.exists():
+        raise FileNotFoundError(
+            "Processed daily meteorology file not found. "
+            f"Expected file at '{file_path}'. "
+            "Generate it once with `python -m src.prepare_runtime_data` or share it with the repo for inference."
+        )
+    frame = pd.read_parquet(file_path)
+    frame["date"] = pd.to_datetime(frame["date"])
+    return frame.sort_values("date").reset_index(drop=True)
 
 
 def merge_meteorological_features(pm_frame: pd.DataFrame, met_frame: pd.DataFrame) -> pd.DataFrame:

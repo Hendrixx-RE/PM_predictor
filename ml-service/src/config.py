@@ -20,6 +20,7 @@ LON_MAX = 74.10
 TARGET_COLUMN = "pm25"
 FEATURE_TABLE_NAME = "pune_pm25_features.parquet"
 RAW_TABLE_NAME = "pune_pm25_raw.parquet"
+DAILY_MET_TABLE_NAME = "pune_daily_meteorology.parquet"
 
 
 def ensure_directories() -> None:
