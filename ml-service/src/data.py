@@ -249,6 +249,59 @@ def load_meteorological_monthly_features(raw_dir: Path = METEOROLOGICAL_DIR) -> 
     return monthly_instant.merge(monthly_accum, on="time", how="outer").sort_values("time").reset_index(drop=True)
 
 
+def load_meteorological_daily_features(raw_dir: Path = METEOROLOGICAL_DIR) -> pd.DataFrame:
+    instant_path = raw_dir / "data_stream-oper_stepType-instant.nc"
+    accum_path = raw_dir / "data_stream-oper_stepType-accum.nc"
+    if not instant_path.exists() or not accum_path.exists():
+        raise FileNotFoundError("Meteorological NetCDF files not found.")
+
+    with xr.open_dataset(instant_path) as instant_ds, xr.open_dataset(accum_path) as accum_ds:
+        lat_name = _detect_coordinate_name(instant_ds, ["lat", "latitude", "Latitude", "LAT"])
+        lon_name = _detect_coordinate_name(instant_ds, ["lon", "longitude", "Longitude", "LON"])
+        time_name = _detect_coordinate_name(instant_ds, ["valid_time", "time", "month"])
+
+        instant_subset = instant_ds.sel(
+            {
+                lat_name: slice(LAT_MAX, LAT_MIN) if instant_ds[lat_name].values[0] > instant_ds[lat_name].values[-1] else slice(LAT_MIN, LAT_MAX),
+                lon_name: slice(LON_MIN, LON_MAX) if instant_ds[lon_name].values[0] < instant_ds[lon_name].values[-1] else slice(LON_MAX, LON_MIN),
+            }
+        )
+        accum_subset = accum_ds.sel(
+            {
+                lat_name: slice(LAT_MAX, LAT_MIN) if accum_ds[lat_name].values[0] > accum_ds[lat_name].values[-1] else slice(LAT_MIN, LAT_MAX),
+                lon_name: slice(LON_MIN, LON_MAX) if accum_ds[lon_name].values[0] < accum_ds[lon_name].values[-1] else slice(LON_MAX, LON_MIN),
+            }
+        )
+
+        instant_frame = instant_subset[["u10", "v10", "d2m", "t2m", "msl", "sp", "tcc"]].to_dataframe().reset_index()
+        accum_frame = accum_subset[["tp"]].to_dataframe().reset_index()
+
+    instant_frame["date"] = pd.to_datetime(instant_frame[time_name]).dt.floor("D")
+    accum_frame["date"] = pd.to_datetime(accum_frame[time_name]).dt.floor("D")
+    instant_frame["wind_speed_10m"] = np.sqrt(instant_frame["u10"] ** 2 + instant_frame["v10"] ** 2)
+
+    daily_instant = (
+        instant_frame.groupby("date", as_index=False)
+        .agg(
+            met_t2m_mean=("t2m", "mean"),
+            met_d2m_mean=("d2m", "mean"),
+            met_wind_speed_mean=("wind_speed_10m", "mean"),
+            met_msl_mean=("msl", "mean"),
+            met_sp_mean=("sp", "mean"),
+            met_tcc_mean=("tcc", "mean"),
+        )
+        .sort_values("date")
+        .reset_index(drop=True)
+    )
+    daily_accum = (
+        accum_frame.groupby("date", as_index=False)
+        .agg(met_tp_sum=("tp", "sum"))
+        .sort_values("date")
+        .reset_index(drop=True)
+    )
+    return daily_instant.merge(daily_accum, on="date", how="outer").sort_values("date").reset_index(drop=True)
+
+
 def merge_meteorological_features(pm_frame: pd.DataFrame, met_frame: pd.DataFrame) -> pd.DataFrame:
     data = pm_frame.copy()
     data["time"] = pd.to_datetime(data["time"]).dt.to_period("M").dt.to_timestamp()
