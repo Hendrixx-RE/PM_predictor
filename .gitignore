@@ -36,18 +36,18 @@ Thumbs.db
 secrets*.json
 credentials*.json
 
-# Large / private project data
-data/raw/**
-data/external/**
-!data/raw/.gitkeep
+# Large / private ML service data
+ml-service/data/raw/**
+ml-service/data/external/**
+!ml-service/data/raw/.gitkeep
 
 # Generated processed data
-data/processed/**
-!data/processed/.gitkeep
+ml-service/data/processed/**
+!ml-service/data/processed/.gitkeep
 
 # Trained models and experiment artifacts
-models/**
-!models/.gitkeep
+ml-service/models/**
+!ml-service/models/.gitkeep
 *.joblib
 *.pkl
 *.pickle
@@ -55,13 +55,18 @@ models/**
 *.feather
 
 # Generated outputs
-outputs/**
-!outputs/plots/.gitkeep
+ml-service/outputs/**
+!ml-service/outputs/plots/.gitkeep
 *.png
 *.jpg
 *.jpeg
 *.svg
 *.pdf
+
+# Frontend dependencies / build
+frontend/node_modules/
+frontend/dist/
+frontend/build/
 
 # Logs
 *.log
