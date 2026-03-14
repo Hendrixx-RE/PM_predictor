@@ -1,0 +1,27 @@
+feature,reason
+latitude,Captures local north-south spatial differences inside Pune.
+longitude,Captures local east-west spatial differences inside Pune.
+month,Represents recurring monthly pollution seasonality.
+year,Captures slow structural changes across years.
+month_sin,Cyclic month encoding that preserves adjacency between December and January.
+month_cos,Second cyclic month component for smooth seasonal patterns.
+months_since_start,Linear time trend from the start of the record.
+pm_lag_1,"Previous month PM2.5, usually the strongest persistence signal."
+pm_lag_2,Two-month memory for medium persistence.
+pm_lag_3,Three-month memory for longer temporal carryover.
+rolling_pm_3,Smoothed 3-month mean reduces short-term noise.
+rolling_pm_6,Smoothed 6-month mean captures sustained background loading.
+trend_1_3,Recent PM2.5 slope helps identify rising or falling trajectories.
+spatial_lag_mean_1,Average PM2.5 from neighboring cells in the previous month captures regional coherence.
+spatial_lag_weighted_1,Distance-weighted neighbor PM2.5 from the previous month preserves local plume structure.
+grid_density,Counts valid nearby neighbors and stabilizes spatial estimates.
+satellite_pm25_aux,Auxiliary monthly satellite-derived PM field used as an additional observational signal.
+satellite_pm25_aux_lag_1,Previous-month auxiliary satellite PM signal at the same location.
+satellite_pm25_aux_lag_3,Smoothed 3-month history of the auxiliary satellite PM signal.
+met_t2m_mean,Monthly mean 2m temperature over Pune from the meteorological grid.
+met_d2m_mean,"Monthly mean 2m dewpoint over Pune, capturing moisture conditions."
+met_wind_speed_mean,"Monthly mean 10m wind speed over Pune, capturing dispersion strength."
+met_msl_mean,"Monthly mean sea-level pressure, reflecting large-scale atmospheric conditions."
+met_sp_mean,Monthly mean surface pressure over Pune.
+met_tcc_mean,Monthly mean total cloud cover over Pune.
+met_tp_sum,"Monthly total precipitation over Pune, capturing washout effects."

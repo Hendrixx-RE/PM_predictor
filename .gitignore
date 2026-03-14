@@ -43,16 +43,23 @@ ml-service/data/external/**
 
 # Generated processed data
 ml-service/data/processed/**
-!ml-service/data/processed/.gitkeep
+!ml-service/data/processed/
+!ml-service/data/processed/**
 
 # Trained models and experiment artifacts
 ml-service/models/**
-!ml-service/models/.gitkeep
+!ml-service/models/
+!ml-service/models/**
 *.joblib
 *.pkl
 *.pickle
 *.parquet
 *.feather
+
+!ml-service/models/*.joblib
+!ml-service/models/*.json
+!ml-service/data/processed/*.parquet
+!ml-service/data/processed/*.csv
 
 # Generated outputs
 ml-service/outputs/**

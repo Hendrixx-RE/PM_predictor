@@ -1,0 +1,147 @@
+{
+  "feature_columns": [
+    "met_t2m_mean_anomaly",
+    "met_d2m_mean_anomaly",
+    "met_wind_speed_mean_anomaly",
+    "met_msl_mean_anomaly",
+    "met_sp_mean_anomaly",
+    "met_tcc_mean_anomaly",
+    "met_tp_sum_anomaly"
+  ],
+  "climatology": [
+    {
+      "month": 1,
+      "pm25_climatology": 52.42863464355469,
+      "met_t2m_mean_climatology": 288.23736572265625,
+      "met_d2m_mean_climatology": 283.9071960449219,
+      "met_wind_speed_mean_climatology": 1.716630220413208,
+      "met_msl_mean_climatology": 101415.546875,
+      "met_sp_mean_climatology": 93533.0703125,
+      "met_tcc_mean_climatology": 0.2166995406150818,
+      "met_tp_sum_climatology": 7.195224316092208e-05
+    },
+    {
+      "month": 2,
+      "pm25_climatology": 46.472164154052734,
+      "met_t2m_mean_climatology": 289.76568603515625,
+      "met_d2m_mean_climatology": 284.22894287109375,
+      "met_wind_speed_mean_climatology": 1.6365433931350708,
+      "met_msl_mean_climatology": 101312.25,
+      "met_sp_mean_climatology": 93460.9296875,
+      "met_tcc_mean_climatology": 0.17418374121189117,
+      "met_tp_sum_climatology": 8.058089588303119e-05
+    },
+    {
+      "month": 3,
+      "pm25_climatology": 40.215518951416016,
+      "met_t2m_mean_climatology": 292.2717590332031,
+      "met_d2m_mean_climatology": 285.72113037109375,
+      "met_wind_speed_mean_climatology": 1.6617194414138794,
+      "met_msl_mean_climatology": 101167.9921875,
+      "met_sp_mean_climatology": 93352.1640625,
+      "met_tcc_mean_climatology": 0.20182473957538605,
+      "met_tp_sum_climatology": 0.00024262272927444428
+    },
+    {
+      "month": 4,
+      "pm25_climatology": 33.10271453857422,
+      "met_t2m_mean_climatology": 291.86968994140625,
+      "met_d2m_mean_climatology": 285.5411071777344,
+      "met_wind_speed_mean_climatology": 1.6671199798583984,
+      "met_msl_mean_climatology": 101192.71875,
+      "met_sp_mean_climatology": 93370.2421875,
+      "met_tcc_mean_climatology": 0.2034178078174591,
+      "met_tp_sum_climatology": 0.00022558547789230943
+    },
+    {
+      "month": 5,
+      "pm25_climatology": 25.578960418701172,
+      "met_t2m_mean_climatology": 291.4676818847656,
+      "met_d2m_mean_climatology": 285.3611145019531,
+      "met_wind_speed_mean_climatology": 1.6725205183029175,
+      "met_msl_mean_climatology": 101217.453125,
+      "met_sp_mean_climatology": 93388.3203125,
+      "met_tcc_mean_climatology": 0.20501089096069336,
+      "met_tp_sum_climatology": 0.0002085482410620898
+    },
+    {
+      "month": 6,
+      "pm25_climatology": 22.65500259399414,
+      "met_t2m_mean_climatology": 291.0656433105469,
+      "met_d2m_mean_climatology": 285.18109130859375,
+      "met_wind_speed_mean_climatology": 1.677921175956726,
+      "met_msl_mean_climatology": 101242.1796875,
+      "met_sp_mean_climatology": 93406.40625,
+      "met_tcc_mean_climatology": 0.2066039890050888,
+      "met_tp_sum_climatology": 0.00019151098967995495
+    },
+    {
+      "month": 7,
+      "pm25_climatology": 22.772953033447266,
+      "met_t2m_mean_climatology": 290.6636047363281,
+      "met_d2m_mean_climatology": 285.0010986328125,
+      "met_wind_speed_mean_climatology": 1.6833218336105347,
+      "met_msl_mean_climatology": 101266.921875,
+      "met_sp_mean_climatology": 93424.484375,
+      "met_tcc_mean_climatology": 0.20819705724716187,
+      "met_tp_sum_climatology": 0.00017447375284973532
+    },
+    {
+      "month": 8,
+      "pm25_climatology": 20.81776237487793,
+      "met_t2m_mean_climatology": 290.2615966796875,
+      "met_d2m_mean_climatology": 284.8210754394531,
+      "met_wind_speed_mean_climatology": 1.6887224912643433,
+      "met_msl_mean_climatology": 101291.65625,
+      "met_sp_mean_climatology": 93442.5546875,
+      "met_tcc_mean_climatology": 0.20979014039039612,
+      "met_tp_sum_climatology": 0.00015743650146760046
+    },
+    {
+      "month": 9,
+      "pm25_climatology": 27.49273681640625,
+      "met_t2m_mean_climatology": 289.85955810546875,
+      "met_d2m_mean_climatology": 284.64105224609375,
+      "met_wind_speed_mean_climatology": 1.6941230297088623,
+      "met_msl_mean_climatology": 101316.3828125,
+      "met_sp_mean_climatology": 93460.640625,
+      "met_tcc_mean_climatology": 0.21138320863246918,
+      "met_tp_sum_climatology": 0.00014039926463738084
+    },
+    {
+      "month": 10,
+      "pm25_climatology": 39.63960647583008,
+      "met_t2m_mean_climatology": 289.45751953125,
+      "met_d2m_mean_climatology": 284.4610290527344,
+      "met_wind_speed_mean_climatology": 1.699523687362671,
+      "met_msl_mean_climatology": 101341.1171875,
+      "met_sp_mean_climatology": 93478.71875,
+      "met_tcc_mean_climatology": 0.21297630667686462,
+      "met_tp_sum_climatology": 0.00012336201325524598
+    },
+    {
+      "month": 11,
+      "pm25_climatology": 46.31676483154297,
+      "met_t2m_mean_climatology": 289.05548095703125,
+      "met_d2m_mean_climatology": 284.2810363769531,
+      "met_wind_speed_mean_climatology": 1.70492422580719,
+      "met_msl_mean_climatology": 101365.84375,
+      "met_sp_mean_climatology": 93496.796875,
+      "met_tcc_mean_climatology": 0.21456938982009888,
+      "met_tp_sum_climatology": 0.00010632476187311113
+    },
+    {
+      "month": 12,
+      "pm25_climatology": 51.315128326416016,
+      "met_t2m_mean_climatology": 288.6534423828125,
+      "met_d2m_mean_climatology": 284.10101318359375,
+      "met_wind_speed_mean_climatology": 1.710324764251709,
+      "met_msl_mean_climatology": 101390.5859375,
+      "met_sp_mean_climatology": 93514.875,
+      "met_tcc_mean_climatology": 0.21616245806217194,
+      "met_tp_sum_climatology": 8.928751776693389e-05
+    }
+  ],
+  "shrinkage": 0.45,
+  "adjustment_cap": 18.0
+}
