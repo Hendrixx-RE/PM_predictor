@@ -156,10 +156,54 @@ function App() {
 
   const generateMockHeatmap = () => {
     const pts = [];
-    const hubs = [{ n: 'Tokyo', lt: 35.6, lg: 139.6 }, { n: 'Delhi', lt: 28.6, lg: 77.2 }, { n: 'Mumbai', lt: 19.0, lg: 72.8 }];
-    hubs.forEach(h => {
-      for (let i = 0; i < 50; i++) pts.push({ id: `h-${h.n}-${i}`, lat: h.lt + (Math.random() - 0.5) * 10, lng: h.lg + (Math.random() - 0.5) * 10, pm: Math.random() * 200 });
+    const asiaHubs = [
+      { n: 'Tokyo', lt: 35.6, lg: 139.6, b: 40 },
+      { n: 'Beijing', lt: 39.9, lg: 116.4, b: 160 },
+      { n: 'Delhi', lt: 28.6, lg: 77.2, b: 180 },
+      { n: 'Mumbai', lt: 19.1, lg: 72.9, b: 140 },
+      { n: 'Bangkok', lt: 13.8, lg: 100.5, b: 110 },
+      { n: 'Jakarta', lt: -6.2, lg: 106.8, b: 130 },
+      { n: 'Seoul', lt: 37.6, lg: 127.0, b: 50 },
+      { n: 'Dhaka', lt: 23.8, lg: 90.4, b: 170 },
+      { n: 'Shanghai', lt: 31.2, lg: 121.5, b: 120 },
+      { n: 'Singapore', lt: 1.4, lg: 103.8, b: 30 },
+      { n: 'Dubai', lt: 25.2, lg: 55.3, b: 90 },
+      { n: 'Karachi', lt: 24.9, lg: 67.0, b: 150 },
+      { n: 'Manila', lt: 14.6, lg: 121.0, b: 100 },
+      { n: 'Ho Chi Minh', lt: 10.8, lg: 106.6, b: 90 },
+      { n: 'Lahore', lt: 31.5, lg: 74.4, b: 160 },
+      { n: 'Riyadh', lt: 24.7, lg: 46.7, b: 100 },
+      { n: 'Tehran', lt: 35.7, lg: 51.3, b: 130 },
+    ];
+
+    asiaHubs.forEach(h => {
+      for (let i = 0; i < 60; i++) {
+        pts.push({
+          id: `h-${h.n}-${i}`,
+          lat: h.lt + (Math.random() - 0.5) * 8,
+          lng: h.lg + (Math.random() - 0.5) * 8,
+          pm: Math.max(5, h.b + (Math.random() - 0.5) * 100)
+        });
+      }
     });
+
+    // Fill Landmasses
+    for (let i = 0; i < 300; i++) {
+      pts.push({
+        id: `ea-${i}`,
+        lat: 15 + Math.random() * 35,
+        lng: 90 + Math.random() * 45,
+        pm: Math.floor(Math.random() * 120) + 20
+      });
+    }
+    for (let i = 0; i < 200; i++) {
+      pts.push({
+        id: `wa-${i}`,
+        lat: 10 + Math.random() * 35,
+        lng: 45 + Math.random() * 45,
+        pm: Math.floor(Math.random() * 140) + 30
+      });
+    }
     return pts;
   };
   const [heatmapData, setHeatmapData] = useState(generateMockHeatmap());
@@ -221,7 +265,7 @@ function App() {
               <button className={`mode-btn ${mapMode === 'gradient' ? 'active' : ''}`} onClick={() => setMapMode('gradient')}>Gradient</button>
             </div>
             {mapMode === 'markers' && <button className={`critical-btn ${isCriticalOnly ? 'active' : ''}`} onClick={() => setIsCriticalOnly(!isCriticalOnly)}>Critical Only</button>}
-            <button className="predict-btn" onClick={() => setHeatmapData(generateMockHeatmap())}>Randomize</button>
+            <button className="predict-btn" onClick={() => setHeatmapData(generateMockHeatmap())}></button>
           </div>
         </div>
       ) : view === 'bulk' ? (
