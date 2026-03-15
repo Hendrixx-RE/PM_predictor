@@ -124,39 +124,148 @@ header.minimal h1 {
   border-radius: 50%;
 }
 
-.map-controls {
-  margin-top: 2rem;
+.action-row {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.critical-btn {
+  padding: 1rem 2rem;
+  background: var(--card-bg);
+  border: 2px solid #FD0101;
+  color: #FD0101;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.critical-btn.active {
+  background: #FD0101;
+  color: white;
+  box-shadow: 0 4px 15px rgba(253, 1, 1, 0.3);
+}
+
+.critical-btn:hover:not(.active) {
+  background: rgba(253, 1, 1, 0.05);
+}
+
+/* Cigarette Impact Tooltip Styles */
+.leaflet-tooltip {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  border-radius: 1rem !important;
+  padding: 0 !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+}
+
+.health-impact-tooltip {
+  min-width: 280px;
+  padding: 1.5rem;
+}
+
+.cigarette-impact {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
+}
+
+.impact-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cig-count {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #FD0101;
+}
+
+.cig-label-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cig-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #FD0101;
+}
+
+.cig-icon {
+  font-size: 1.5rem;
+}
+
+.impact-desc {
+  font-size: 0.9rem;
+  margin: 0;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+.impact-stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.stat-val {
+  font-weight: 800;
+  color: #FD0101;
 }
 
 .mode-toggle-group {
   display: flex;
   background: var(--bg-color);
-  padding: 0.4rem;
+  padding: 0.5rem;
   border-radius: 0.8rem;
   border: 1px solid var(--border-color);
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .mode-btn {
-  padding: 0.6rem 1.5rem;
+  padding: 0.8rem 2rem;
   border: none;
-  background: transparent;
+  background: var(--card-bg);
   color: var(--text-muted);
   cursor: pointer;
   border-radius: 0.5rem;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 1rem;
   transition: all 0.2s;
+  border: 2px solid transparent;
 }
 
 .mode-btn.active {
-  background: var(--card-bg);
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 12px rgba(44, 122, 123, 0.3);
+}
+
+.mode-btn:hover:not(.active) {
+  border-color: var(--primary-color);
   color: var(--primary-color);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .theme-toggle-btn {
@@ -273,6 +382,52 @@ header.minimal h1 {
   }
 }
 
+.input-view {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.toggle-container {
+  display: flex;
+  background: var(--bg-color);
+  padding: 0.4rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--border-color);
+  gap: 0.5rem;
+}
+
+.toggle-btn {
+  padding: 0.6rem 1.5rem;
+  border: none;
+  background: var(--card-bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.toggle-btn.active {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 12px rgba(44, 122, 123, 0.3);
+}
+
+.toggle-btn:hover:not(.active) {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.card {
   background: var(--card-bg);
   padding: 2rem;
   border-radius: 1rem;
@@ -484,4 +639,45 @@ input, select {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.back-btn, .print-btn {
+  padding: 1rem 2.5rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+  border: 2px solid transparent;
+}
+
+.back-btn {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 12px rgba(44, 122, 123, 0.3);
+}
+
+.back-btn:hover {
+  background: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.print-btn {
+  background: var(--card-bg);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.print-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
 }

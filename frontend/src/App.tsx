@@ -24,12 +24,11 @@ function HeatmapLayer({ points }: { points: any[] }) {
       blur: 25,   // Higher blur for smooth gradients
       maxZoom: 10,
       gradient: {
-        0.1: '#3182ce', // Cool (Blue)
-        0.2: '#4fd1c5', // Cyan
-        0.4: '#f6e05e', // Moderate (Yellow)
-        0.6: '#ed8936', // Hot (Orange)
-        0.8: '#e53e3e', // Severe (Red)
-        1.0: '#742a2a'  // Dangerous (Dark Maroon)
+        0.2: '#87FC00', // Good
+        0.4: '#FCF400', // Satisfactory
+        0.6: '#FC9300', // Moderate
+        0.8: '#FC4C00', // Poor
+        1.0: '#FD0101'  // Severe
       }
     }).addTo(map);
 
@@ -83,8 +82,19 @@ const PUNE_CITIES: City[] = [
 function App() {
   const [view, setView] = useState<'predictor' | 'heatmap'>('predictor');
   const [mapMode, setMapMode] = useState<'markers' | 'gradient'>('markers');
+  const [isCriticalOnly, setIsCriticalOnly] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(document.documentElement.getAttribute('data-theme') === 'dark');
   const [useCity, setUseCity] = useState(true);
+  // ... rest of state ...
+
+  const getCigarettes = (pm: number) => {
+    const daily = Math.max(1, Math.round(pm / 22));
+    return {
+      daily,
+      weekly: daily * 7,
+      monthly: daily * 30
+    };
+  };
   const [selectedCity, setSelectedCity] = useState(PUNE_CITIES[1].name);
   const [lat, setLat] = useState(PUNE_CITIES[1].lat);
   const [lon, setLon] = useState(PUNE_CITIES[1].lon);
@@ -95,39 +105,56 @@ function App() {
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  // Clustered Geo-coordinates for a fuller, more colorful map
+  // Asia City Hubs for sensible data distribution
   const generateMockHeatmap = () => {
     const points = [];
-    const hubs = [
-      { lat: 28.61, lng: 77.20, basePM: 180 }, // Delhi
-      { lat: 19.07, lng: 72.87, basePM: 150 }, // Mumbai
-      { lat: 12.97, lng: 77.59, basePM: 120 }, // Bangalore
-      { lat: 22.57, lng: 88.36, basePM: 140 }, // Kolkata
-      { lat: 17.38, lng: 78.48, basePM: 130 }, // Hyderabad
-      { lat: 23.02, lng: 72.57, basePM: 160 }, // Ahmedabad
-      { lat: 18.52, lng: 73.85, basePM: 110 }, // Pune
-      { lat: 26.84, lng: 80.94, basePM: 140 }, // Lucknow
+    const asiaHubs = [
+      { name: 'Tokyo', lat: 35.6895, lng: 139.6917, basePM: 40 },
+      { name: 'Beijing', lat: 39.9042, lng: 116.4074, basePM: 160 },
+      { name: 'Delhi', lat: 28.6139, lng: 77.2090, basePM: 180 },
+      { name: 'Mumbai', lat: 19.0760, lng: 72.8777, basePM: 140 },
+      { name: 'Bangkok', lat: 13.7563, lng: 100.5018, basePM: 110 },
+      { name: 'Jakarta', lat: -6.2088, lng: 106.8456, basePM: 130 },
+      { name: 'Seoul', lat: 37.5665, lng: 126.9780, basePM: 50 },
+      { name: 'Dhaka', lat: 23.8103, lng: 90.4125, basePM: 170 },
+      { name: 'Shanghai', lat: 31.2304, lng: 121.4737, basePM: 120 },
+      { name: 'Singapore', lat: 1.3521, lng: 103.8198, basePM: 30 },
+      { name: 'Dubai', lat: 25.2048, lng: 55.2708, basePM: 90 },
+      { name: 'Karachi', lat: 24.8607, lng: 67.0011, basePM: 150 },
+      { name: 'Manila', lat: 14.5995, lng: 120.9842, basePM: 100 },
+      { name: 'Ho Chi Minh City', lat: 10.8231, lng: 106.6297, basePM: 90 },
+      { name: 'Lahore', lat: 31.5204, lng: 74.3587, basePM: 160 },
     ];
 
-    // Generate clusters around hubs
-    hubs.forEach(hub => {
-      for (let i = 0; i < 50; i++) {
+    // Generate clusters around Asian cities (Inhabited regions)
+    asiaHubs.forEach(hub => {
+      for (let i = 0; i < 40; i++) {
         points.push({
-          id: `h-${hub.lat}-${i}`,
-          lat: hub.lat + (Math.random() - 0.5) * 6, // Concentrated but broad spread
-          lng: hub.lng + (Math.random() - 0.5) * 6,
-          pm: hub.basePM + (Math.random() - 0.5) * 60
+          id: `h-${hub.name}-${i}`,
+          lat: hub.lat + (Math.random() - 0.5) * 8, // Regional spread
+          lng: hub.lng + (Math.random() - 0.5) * 8,
+          pm: Math.max(5, hub.basePM + (Math.random() - 0.5) * 80)
         });
       }
     });
 
-    // Background noise to fill the gaps
-    for (let i = 0; i < 200; i++) {
+    // Land regions background fill
+    // China / East Asia
+    for (let i = 0; i < 150; i++) {
       points.push({
-        id: `n-${i}`,
-        lat: 8.4 + Math.random() * (37.6 - 8.4),
-        lng: 68.7 + Math.random() * (97.2 - 68.7),
-        pm: Math.floor(Math.random() * 80) + 10
+        id: `ea-${i}`,
+        lat: 20 + Math.random() * 25,
+        lng: 100 + Math.random() * 30,
+        pm: Math.floor(Math.random() * 100) + 20
+      });
+    }
+    // South / West Asia
+    for (let i = 0; i < 150; i++) {
+      points.push({
+        id: `sa-${i}`,
+        lat: 10 + Math.random() * 30,
+        lng: 50 + Math.random() * 50,
+        pm: Math.floor(Math.random() * 120) + 30
       });
     }
     return points;
@@ -196,11 +223,11 @@ function App() {
   };
 
   const getPMColor = (pm: number) => {
-    if (pm <= 30) return '#48BB78'; // Good
-    if (pm <= 60) return '#ECC94B'; // Satisfactory
-    if (pm <= 90) return '#ED8936'; // Moderate
-    if (pm <= 120) return '#E53E3E'; // Poor
-    return '#822727'; // Very Poor/Severe
+    if (pm <= 30) return '#87FC00'; // Good
+    if (pm <= 60) return '#FCF400'; // Satisfactory
+    if (pm <= 90) return '#FC9300'; // Moderate
+    if (pm <= 120) return '#FC4C00'; // Poor
+    return '#FD0101'; // Severe
   };
 
   const getPMLabel = (pm: number) => {
@@ -219,26 +246,26 @@ function App() {
             className={`nav-link ${view === 'predictor' ? 'active' : ''}`}
             onClick={() => { setView('predictor'); setShowResult(false); }}
           >
-            📊 Predictor
+            Predictor
           </button>
           <button 
             className={`nav-link ${view === 'heatmap' ? 'active' : ''}`}
             onClick={() => setView('heatmap')}
           >
-            🗺️ Interactive Heatmap
+            Interactive Heatmap
           </button>
         </div>
         <div className="theme-toggle-container">
           <button onClick={toggleTheme} className="theme-toggle-btn">
-            {isDarkMode ? '☀️ Light' : '🌙 Dark'}
+            {isDarkMode ? 'Light' : 'Dark'}
           </button>
         </div>
       </nav>
 
       <header className={showResult || view === 'heatmap' ? 'minimal' : ''}>
-        <h1>Pune PM<sub>2.5</sub> {view === 'heatmap' ? 'Heatmap' : 'Predictor'}</h1>
+        <h1>{view === 'heatmap' ? 'Asia PM2.5 Heatmap' : 'Pune PM2.5 Predictor'}</h1>
         {!showResult && view === 'predictor' && <p className="subtitle">High-resolution monthly air quality forecasting for Pune City</p>}
-        {view === 'heatmap' && <p className="subtitle">Live spatial distribution of PM<sub>2.5</sub> across the region (Simulated)</p>}
+        {view === 'heatmap' && <p className="subtitle">{mapMode === 'gradient' ? 'Density Gradient' : 'Point Distribution'} of PM<sub>2.5</sub> across Asia</p>}
       </header>
 
       {view === 'heatmap' ? (
@@ -246,8 +273,8 @@ function App() {
           <div className="map-container card">
             <div className="leaflet-wrapper">
               <MapContainer 
-                center={[20.5937, 78.9629]} 
-                zoom={5} 
+                center={[25.0, 95.0]} 
+                zoom={4} 
                 scrollWheelZoom={true}
                 className="india-leaflet-map"
               >
@@ -257,7 +284,9 @@ function App() {
                 />
                 
                 {mapMode === 'markers' ? (
-                  heatmapData.map(point => (
+                  heatmapData
+                    .filter(point => !isCriticalOnly || point.pm > 90)
+                    .map(point => (
                     <Circle
                       key={point.id}
                       center={[point.lat, point.lng]}
@@ -270,9 +299,34 @@ function App() {
                       radius={30000}
                     >
                       <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-                        <div className="map-tooltip">
-                          <strong>PM<sub>2.5</sub>: {point.pm} µg/m³</strong><br/>
-                          <span>Status: {getPMLabel(point.pm)}</span>
+                        <div className="health-impact-tooltip">
+                          {point.pm > 90 ? (
+                            <div className="cigarette-impact">
+                              <div className="impact-header">
+                                <span className="cig-count">{getCigarettes(point.pm).daily}</span>
+                                <div className="cig-label-group">
+                                  <span className="cig-label">Cigarettes per day</span>
+                                  <span className="cig-icon">🚬</span>
+                                </div>
+                              </div>
+                              <p className="impact-desc">Breathing the air here is as harmful as smoking {getCigarettes(point.pm).daily} cigarettes a day.</p>
+                              <div className="impact-stats">
+                                <div className="stat-item">
+                                  <span className="stat-label">Weekly</span>
+                                  <span className="stat-val">{getCigarettes(point.pm).weekly}</span>
+                                </div>
+                                <div className="stat-item">
+                                  <span className="stat-label">Monthly</span>
+                                  <span className="stat-val">{getCigarettes(point.pm).monthly}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="map-tooltip">
+                              <strong>PM<sub>2.5</sub>: {point.pm} µg/m³</strong><br/>
+                              <span>Status: {getPMLabel(point.pm)}</span>
+                            </div>
+                          )}
                         </div>
                       </Tooltip>
                     </Circle>
@@ -282,28 +336,39 @@ function App() {
                 )}
               </MapContainer>
               <div className="map-legend">
-                <div className="legend-item"><span style={{backgroundColor: '#48BB78'}}></span> Good</div>
-                <div className="legend-item"><span style={{backgroundColor: '#ECC94B'}}></span> Moderate</div>
-                <div className="legend-item"><span style={{backgroundColor: '#ED8936'}}></span> Poor</div>
-                <div className="legend-item"><span style={{backgroundColor: '#E53E3E'}}></span> Severe</div>
+                <div className="legend-item"><span style={{backgroundColor: '#87FC00'}}></span> Good</div>
+                <div className="legend-item"><span style={{backgroundColor: '#FCF400'}}></span> Satisfactory</div>
+                <div className="legend-item"><span style={{backgroundColor: '#FC9300'}}></span> Moderate</div>
+                <div className="legend-item"><span style={{backgroundColor: '#FC4C00'}}></span> Poor</div>
+                <div className="legend-item"><span style={{backgroundColor: '#FD0101'}}></span> Severe</div>
               </div>
             </div>
             <div className="map-controls">
               <div className="mode-toggle-group">
                 <button 
-                  className={`toggle-btn ${mapMode === 'markers' ? 'active' : ''}`}
+                  className={`mode-btn ${mapMode === 'markers' ? 'active' : ''}`}
                   onClick={() => setMapMode('markers')}
                 >
-                  📍 Points
+                  Points View
                 </button>
                 <button 
-                  className={`toggle-btn ${mapMode === 'gradient' ? 'active' : ''}`}
+                  className={`mode-btn ${mapMode === 'gradient' ? 'active' : ''}`}
                   onClick={() => setMapMode('gradient')}
                 >
-                  🔥 Gradient
+                  Gradient View
                 </button>
               </div>
-              <button className="predict-btn" onClick={() => setHeatmapData(generateMockHeatmap())}>🔄 Randomize Data</button>
+              <div className="action-row">
+                {mapMode === 'markers' && (
+                  <button 
+                    className={`critical-btn ${isCriticalOnly ? 'active' : ''}`}
+                    onClick={() => setIsCriticalOnly(!isCriticalOnly)}
+                  >
+                    Critical Health Zones
+                  </button>
+                )}
+                <button className="predict-btn" onClick={() => setHeatmapData(generateMockHeatmap())}>Randomize Data</button>
+              </div>
             </div>
           </div>
         </div>
@@ -318,13 +383,13 @@ function App() {
                     className={`toggle-btn ${useCity ? 'active' : ''}`}
                     onClick={() => setUseCity(true)}
                   >
-                    By City
+                    City
                   </button>
                   <button 
                     className={`toggle-btn ${!useCity ? 'active' : ''}`}
                     onClick={() => setUseCity(false)}
                   >
-                    By Coords
+                    Coordinates
                   </button>
                 </div>
               </div>
@@ -346,7 +411,7 @@ function App() {
                 ) : (
                   <div className="form-row animate-fade-in">
                     <div className="form-group">
-                      <label htmlFor="lat">Latitude (18.40 - 18.70)</label>
+                      <label htmlFor="lat">Latitude</label>
                       <input
                         id="lat"
                         type="number"
@@ -359,7 +424,7 @@ function App() {
                       />
                     </div>
                     <div className="form-group">
-                      <label htmlFor="lon">Longitude (73.70 - 74.10)</label>
+                      <label htmlFor="lon">Longitude</label>
                       <input
                         id="lon"
                         type="number"
@@ -371,8 +436,7 @@ function App() {
                         required
                       />
                     </div>
-                  </div>
-                )}
+                  </div>                )}
 
                 <div className="form-row">
                   <div className="form-group">
@@ -443,7 +507,7 @@ function App() {
                 </div>
 
                 <div className="action-buttons">
-                  <button onClick={resetForm} className="back-btn">← Back to Settings</button>
+                  <button onClick={resetForm} className="back-btn">Home</button>
                   <button onClick={() => window.print()} className="print-btn">Download Report</button>
                 </div>
               </div>
