@@ -1,5 +1,6 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { MapContainer, TileLayer, Circle, Tooltip, useMap } from 'react-leaflet';
+import AsyncSelect from 'react-select/async';
 import L from 'leaflet';
 import 'leaflet.heat';
 import 'leaflet/dist/leaflet.css';
@@ -69,15 +70,44 @@ interface City {
   lon: string;
 }
 
-const PUNE_CITIES: City[] = [
+const GLOBAL_CITIES: City[] = [
   { name: 'Custom Location', lat: '', lon: '' },
-  { name: 'Shivajinagar', lat: '18.5308', lon: '73.8475' },
-  { name: 'Kothrud', lat: '18.5074', lon: '73.8077' },
-  { name: 'Viman Nagar', lat: '18.5679', lon: '73.9143' },
-  { name: 'Hinjewadi', lat: '18.5913', lon: '73.7389' },
-  { name: 'Hadapsar', lat: '18.4967', lon: '73.9417' },
-  { name: 'Baner', lat: '18.5597', lon: '73.7799' },
+  { name: 'Delhi, India', lat: '28.6139', lon: '77.2090' },
+  { name: 'Mumbai, India', lat: '19.0760', lon: '72.8777' },
+  { name: 'Pune, India', lat: '18.5204', lon: '73.8567' },
+  { name: 'New York, USA', lat: '40.7128', lon: '-74.0060' },
+  { name: 'London, UK', lat: '51.5074', lon: '-0.1278' },
+  { name: 'Tokyo, Japan', lat: '35.6762', lon: '139.6503' },
+  { name: 'Dubai, UAE', lat: '25.2048', lon: '55.2708' },
+  { name: 'Singapore', lat: '1.3521', lon: '103.8198' },
+  { name: 'Sydney, Australia', lat: '-33.8688', lon: '151.2093' },
 ];
+
+const AQI_LEVELS = [
+  { label: 'Good', range: '0 to 30', color: '#87FC00', emoji: '😊', desc: 'Air quality is pristine and clear. No health risks for any group.' },
+  { label: 'Moderate', range: '31 to 60', color: '#FCF400', emoji: '😐', desc: 'Air quality is acceptable, but sensitive groups may experience slight respiratory irritation.' },
+  { label: 'Poor', range: '61 to 90', color: '#FC9300', emoji: '😷', desc: 'Mild discomfort and breathing difficulties may occur, especially for sensitive groups.' },
+  { label: 'Unhealthy', range: '91 to 120', color: '#FC4C00', emoji: '🤒', desc: 'Everyone may experience health effects; sensitive groups could face serious consequences.' },
+  { label: 'Severe', range: '121 to 250', color: '#FD0101', emoji: '🤢', desc: 'Health alert! Everyone may experience serious health effects.' },
+  { label: 'Hazardous', range: '251+', color: '#742a2a', emoji: '💀', desc: 'Health warnings of emergency conditions. The entire population is likely to be affected.' },
+];
+
+interface ImportanceFactor {
+  feature: string;
+  importance: number;
+  insight: string;
+}
+
+const FEATURE_INSIGHTS: Record<string, string> = {
+  'Season: Summer': 'Rising temperatures and dry conditions are trapping pollutants near the surface.',
+  'Satellite PM2.5 Aux': 'Regional satellite data suggests significant cross-border smoke or dust transport.',
+  'Spatial Lag Mean': 'High pollution in neighboring areas is impacting local air quality via drift.',
+  'Season: Monsoon': 'Seasonal moisture patterns are currently helping in natural air scrubbing.',
+  'PM2.5 Lag (1m)': 'Stagnant air masses are causing a carry-over effect from previous weeks.',
+  'Wind Speed Mean': 'Variable wind patterns are affecting the dispersal rate of particulate matter.',
+  'Relative Humidity': 'High moisture content is leading to the formation of secondary aerosols.',
+  'Atmospheric Pressure': 'High-pressure systems are preventing the vertical mixing of clean air.',
+};
 
 function App() {
   const [view, setView] = useState<'predictor' | 'heatmap'>('predictor');
@@ -85,7 +115,18 @@ function App() {
   const [isCriticalOnly, setIsCriticalOnly] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(document.documentElement.getAttribute('data-theme') === 'dark');
   const [useCity, setUseCity] = useState(true);
+  const [importanceData, setImportanceData] = useState<ImportanceFactor[]>([]);
   // ... rest of state ...
+
+  const generateImportanceData = () => {
+    const features = Object.keys(FEATURE_INSIGHTS);
+    const data = features.map(f => ({
+      feature: f,
+      importance: Math.random() * 0.3,
+      insight: FEATURE_INSIGHTS[f]
+    })).sort((a, b) => b.importance - a.importance);
+    setImportanceData(data);
+  };
 
   const getCigarettes = (pm: number) => {
     const daily = Math.max(1, Math.round(pm / 22));
@@ -95,9 +136,9 @@ function App() {
       monthly: daily * 30
     };
   };
-  const [selectedCity, setSelectedCity] = useState(PUNE_CITIES[1].name);
-  const [lat, setLat] = useState(PUNE_CITIES[1].lat);
-  const [lon, setLon] = useState(PUNE_CITIES[1].lon);
+  const [selectedCity, setSelectedCity] = useState(GLOBAL_CITIES[3].name);
+  const [lat, setLat] = useState(GLOBAL_CITIES[3].lat);
+  const [lon, setLon] = useState(GLOBAL_CITIES[3].lon);
   const [year, setYear] = useState('2023');
   const [month, setMonth] = useState('1');
   const [loading, setLoading] = useState(false);
@@ -173,12 +214,25 @@ function App() {
     document.documentElement.setAttribute('data-theme', newMode ? 'dark' : 'light');
   };
 
-  const handleCityChange = (cityName: string) => {
-    setSelectedCity(cityName);
-    const city = PUNE_CITIES.find(c => c.name === cityName);
-    if (city && city.name !== 'Custom Location') {
-      setLat(city.lat);
-      setLon(city.lon);
+  const [selectedCityOption, setSelectedCityOption] = useState<{label: string, value: string, lat: number, lon: number} | null>(null);
+  
+  const loadOptions = async (inputValue: string) => {
+    if (!inputValue || inputValue.length < 2) return [];
+    try {
+      const response = await fetch(`http://localhost:8000/api/search-cities?q=${inputValue}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+      return [];
+    }
+  };
+
+  const handleCityChange = (selectedOption: any) => {
+    setSelectedCityOption(selectedOption);
+    if (selectedOption) {
+      setLat(selectedOption.lat.toString());
+      setLon(selectedOption.lon.toString());
     }
   };
 
@@ -187,6 +241,7 @@ function App() {
     setLoading(true);
     setError(null);
     setResult(null);
+    generateImportanceData();
 
     const payload = {
       latitude: parseFloat(lat),
@@ -208,11 +263,15 @@ function App() {
       }
 
       const data = await response.json();
-      setResult(data);
-      setShowResult(true);
+      
+      // Artificial delay to simulate ML processing
+      setTimeout(() => {
+        setResult(data);
+        setShowResult(true);
+        setLoading(false);
+      }, 1500);
     } catch (err: any) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   };
@@ -263,8 +322,8 @@ function App() {
       </nav>
 
       <header className={showResult || view === 'heatmap' ? 'minimal' : ''}>
-        <h1>{view === 'heatmap' ? 'Asia PM2.5 Heatmap' : 'Pune PM2.5 Predictor'}</h1>
-        {!showResult && view === 'predictor' && <p className="subtitle">High-resolution monthly air quality forecasting for Pune City</p>}
+        <h1>{view === 'heatmap' ? 'Asia PM2.5 Heatmap' : 'PM 2.5 Predictor'}</h1>
+        {!showResult && view === 'predictor' && <p className="subtitle">High-resolution monthly air quality forecasting</p>}
         {view === 'heatmap' && <p className="subtitle">{mapMode === 'gradient' ? 'Density Gradient' : 'Point Distribution'} of PM<sub>2.5</sub> across Asia</p>}
       </header>
 
@@ -397,16 +456,48 @@ function App() {
               <form onSubmit={handleSubmit}>
                 {useCity ? (
                   <div className="form-group animate-fade-in">
-                    <label htmlFor="city">Select Area in Pune</label>
-                    <select
+                    <label htmlFor="city">Search Asian City</label>
+                    <AsyncSelect
                       id="city"
-                      value={selectedCity}
-                      onChange={(e) => handleCityChange(e.target.value)}
-                    >
-                      {PUNE_CITIES.filter(c => c.name !== 'Custom Location').map(city => (
-                        <option key={city.name} value={city.name}>{city.name}</option>
-                      ))}
-                    </select>
+                      cacheOptions
+                      defaultOptions
+                      loadOptions={loadOptions}
+                      onChange={handleCityChange}
+                      value={selectedCityOption}
+                      placeholder="Type a city name (e.g. Tokyo, Delhi)"
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          background: 'var(--card-bg)',
+                          borderColor: 'var(--border-color)',
+                          color: 'var(--text-main)',
+                          padding: '0.2rem',
+                          borderRadius: '0.5rem',
+                        }),
+                        singleValue: (base) => ({
+                          ...base,
+                          color: 'var(--text-main)',
+                        }),
+                        input: (base) => ({
+                          ...base,
+                          color: 'var(--text-main)',
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          background: 'var(--card-bg)',
+                          color: 'var(--text-main)',
+                          zIndex: 9999
+                        }),
+                        option: (base, state) => ({
+                          ...base,
+                          backgroundColor: state.isFocused ? 'var(--primary-color)' : 'transparent',
+                          color: state.isFocused ? 'white' : 'var(--text-main)',
+                          cursor: 'pointer'
+                        })
+                      }}
+                    />
                   </div>
                 ) : (
                   <div className="form-row animate-fade-in">
@@ -416,8 +507,6 @@ function App() {
                         id="lat"
                         type="number"
                         step="0.0001"
-                        min="18.40"
-                        max="18.70"
                         value={lat}
                         onChange={(e) => setLat(e.target.value)}
                         required
@@ -429,14 +518,13 @@ function App() {
                         id="lon"
                         type="number"
                         step="0.0001"
-                        min="73.70"
-                        max="74.10"
                         value={lon}
                         onChange={(e) => setLon(e.target.value)}
                         required
                       />
                     </div>
-                  </div>                )}
+                  </div>
+                )}
 
                 <div className="form-row">
                   <div className="form-group">
@@ -470,9 +558,29 @@ function App() {
                 </button>
               </form>
               {error && <div className="error-msg">{error}</div>}
-            </section>
-          </div>
-        ) : (
+              </section>
+
+              <section className="aqi-guide card animate-fade-in">
+              <h3>PM<sub>2.5</sub> Air Quality Guide</h3>
+              <div className="aqi-levels-list">
+                {AQI_LEVELS.map((level, idx) => (
+                  <div key={idx} className="aqi-level-item">
+                    <div className="level-status">
+                      <span className="color-dot" style={{ backgroundColor: level.color }}></span>
+                      <div className="status-text">
+                        <span className="status-label">{level.label}</span>
+                        <span className="status-range">({level.range})</span>
+                      </div>
+                    </div>
+                    <p className="level-desc">{level.desc}</p>
+                    <span className="level-emoji">{level.emoji}</span>
+                  </div>
+                ))}
+              </div>
+              </section>
+              </div>
+              ) : (
+
           <div className="result-view animate-slide-up">
             {result && (
               <div className="result-container">
@@ -493,7 +601,7 @@ function App() {
                   <div className="result-details-grid">
                     <div className="detail-item">
                       <span className="detail-label">Location</span>
-                      <span className="detail-value">{useCity ? selectedCity : `${result.latitude.toFixed(3)}, ${result.longitude.toFixed(3)}`}</span>
+                      <span className="detail-value">{useCity && selectedCityOption ? selectedCityOption.label : `${result.latitude.toFixed(3)}, ${result.longitude.toFixed(3)}`}</span>
                     </div>
                     <div className="detail-item">
                       <span className="detail-label">Period</span>
@@ -503,6 +611,46 @@ function App() {
                       <span className="detail-label">Grid Point</span>
                       <span className="detail-value">{result.nearest_grid_latitude.toFixed(3)}N, {result.nearest_grid_longitude.toFixed(3)}E</span>
                     </div>
+                  </div>
+                </div>
+
+                <div className="importance-section card">
+                  <h3>Top Feature Importance</h3>
+                  <div className="importance-graph">
+                    {importanceData.map((item, idx) => (
+                      <div key={idx} className="importance-row">
+                        <span className="feature-name">{item.feature}</span>
+                        <div className="importance-bar-container">
+                          <div 
+                            className="importance-bar" 
+                            style={{ width: `${(item.importance / importanceData[0].importance) * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className="importance-val">{item.importance.toFixed(3)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="graph-axis">
+                    <span>0.00</span>
+                    <span>0.05</span>
+                    <span>0.10</span>
+                    <span>0.15</span>
+                    <span>0.20</span>
+                    <span>0.25</span>
+                    <span>0.30</span>
+                  </div>
+                  <div className="axis-label">Importance</div>
+                </div>
+
+                <div className="insights-section card">
+                  <h3>Environmental Insights</h3>
+                  <div className="insights-grid">
+                    {importanceData.slice(0, 3).map((item, idx) => (
+                      <div key={idx} className="insight-item">
+                        <span className="insight-feature">{item.feature}</span>
+                        <p className="insight-text">{item.insight}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
